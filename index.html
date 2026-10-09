@@ -193,13 +193,15 @@
   <div class="companion-layout">
     <div class="chat-area">
       <div class="chat-tabs">
-        <button class="chat-tab active" onclick="switchChatMode('coze', this)">🤖 Coze AI 问答</button>
-        <button class="chat-tab" onclick="switchChatMode('local', this)">💬 本地问答</button>
+        <button class="chat-tab active" onclick="switchChatMode('local', this)">💬 AI 智能问答</button>
+        <button class="chat-tab" onclick="switchChatMode('coze', this)">🤖 Coze 问答</button>
       </div>
-      <div id="cozeChatArea" style="flex:1;display:flex;">
-        <iframe id="cozeFrame" src="https://www.coze.cn/store/bot/7694563796656406568" style="width:100%;height:560px;border:none;border-radius:8px;" allow="microphone"></iframe>
+      <div id="cozeChatArea" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+        <p style="font-size:18px;margin-bottom:16px;">Coze 系规备考 Bot</p>
+        <p style="color:#7f8c8d;margin-bottom:20px;text-align:center;">点击下方按钮在新窗口打开 Coze 聊天页面<br>需登录扣子账号后即可真 AI 对话</p>
+        <a href="https://www.coze.cn/store/bot/7694563796656406568" target="_blank" style="background:#1a5fb4;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:16px;">🤖 打开 Coze 聊天</a>
       </div>
-      <div id="localChatArea" style="display:none;flex-direction:column;flex:1;">
+      <div id="localChatArea" style="display:flex;flex-direction:column;flex:1;">
       <div class="chat-messages" id="chatMessages">
         <div class="chat-msg bot">
           <div class="msg-avatar">🤖</div>
