@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // 初始加载
   loadHomeData();
   loadTodayQuiz();
+  initCozeSDK();
 });
 
 // ============================================================
@@ -815,6 +816,26 @@ function closeVideoModal(){
 // ============================================================
 // 学习陪伴 / AI 问答
 // ============================================================
+
+// Coze Web SDK 浮动按钮初始化
+function initCozeSDK(){
+  if(typeof CozeWebSDK === 'undefined') return;
+  try{
+    new CozeWebSDK.WebChatClient({
+      config: { type: 'bot', bot_id: '7694563796656406568', isIframe: false },
+      chatBot: { title: '系规备考助手', uploadable: true, width: 390 }
+    });
+  }catch(e){ console.log('Coze SDK init:', e); }
+}
+
+// 聊天模式切换
+function switchChatMode(mode, btn){
+  document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cozeChatArea').style.display = mode==='coze' ? 'flex' : 'none';
+  document.getElementById('localChatArea').style.display = mode==='local' ? 'flex' : 'none';
+}
+
 function loadCompanionData(){
   // 学习计划
   const data = STATE.learningData;
@@ -875,9 +896,9 @@ function loadCompanionData(){
   });
 }
 
-// AI 服务地址（仅本地访问时启用，HTTPS 页面自动降级为离线）
+// AI 服务地址（本地同源调用，线上自动降级为离线）
 const AI_SERVER = (location.protocol === 'http:' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1'))
-  ? 'http://localhost:5000'
+  ? ''  // 同源相对路径，Flask 服务器同时提供网页和 AI 接口
   : null;
 
 // 检查 AI 服务状态
