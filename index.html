@@ -6,6 +6,8 @@
 <title>软考系规助手 - 2026备考智能学习平台</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Coze Web SDK -->
+<script src="https://lf-cdn.coze.cn/obj/cn-side/neo/coze-web-sdk/coze.js"></script>
 </head>
 <body>
 <div id="app">
@@ -190,6 +192,14 @@
   </div>
   <div class="companion-layout">
     <div class="chat-area">
+      <div class="chat-tabs">
+        <button class="chat-tab active" onclick="switchChatMode('coze', this)">🤖 Coze AI 问答</button>
+        <button class="chat-tab" onclick="switchChatMode('local', this)">💬 本地问答</button>
+      </div>
+      <div id="cozeChatArea" style="flex:1;display:flex;">
+        <iframe id="cozeFrame" src="https://www.coze.cn/store/bot/7694563796656406568" style="width:100%;height:560px;border:none;border-radius:8px;" allow="microphone"></iframe>
+      </div>
+      <div id="localChatArea" style="display:none;flex-direction:column;flex:1;">
       <div class="chat-messages" id="chatMessages">
         <div class="chat-msg bot">
           <div class="msg-avatar">🤖</div>
@@ -199,6 +209,7 @@
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')sendMessage()">
         <button class="btn-primary" onclick="sendMessage()">发送</button>
+      </div>
       </div>
     </div>
     <div class="companion-sidebar">
