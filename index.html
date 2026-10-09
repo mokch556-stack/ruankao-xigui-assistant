@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>软考系规助手 - 2026备考智能学习平台</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div id="app">
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <span class="logo-icon">📚</span>
+    <span class="logo-text">软考系规助手</span>
+  </div>
+  <ul class="nav-menu" id="navMenu">
+    <li class="nav-item active" data-page="home">首页</li>
+    <li class="nav-item" data-page="quiz">每日习题</li>
+    <li class="nav-item" data-page="progress">学情档案</li>
+    <li class="nav-item" data-page="video">每日视频</li>
+    <li class="nav-item" data-page="companion">学习陪伴</li>
+  </ul>
+  <div class="nav-toggle" id="navToggle">☰</div>
+</nav>
+
+<!-- ========== 首页 ========== -->
+<section class="page active" id="page-home">
+  <div class="hero-banner">
+    <h1>2026 软考系统规划与管理师</h1>
+    <p class="hero-subtitle">智能备考 · 精准提分 · 全程陪伴</p>
+    <div class="countdown-box">
+      <span class="countdown-label">距考试还有</span>
+      <span class="countdown-number" id="examCountdown">--</span>
+      <span class="countdown-unit">天</span>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="stat-card">
+      <div class="stat-icon">✏️</div>
+      <div class="stat-value" id="todayQuestions">0</div>
+      <div class="stat-label">今日已做题</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-value" id="totalAccuracy">0%</div>
+      <div class="stat-label">累计正确率</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-value" id="streakDays">0</div>
+      <div class="stat-label">连续打卡</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📖</div>
+      <div class="stat-value" id="totalQuestions">0</div>
+      <div class="stat-label">累计做题</div>
+    </div>
+  </div>
+
+  <div class="home-cards">
+    <div class="action-card quiz-card" onclick="navigateTo('quiz')">
+      <div class="card-header">
+        <span class="card-icon">📝</span>
+        <h3>今日推荐习题</h3>
+      </div>
+      <p>每日精选 5 道系规真题，覆盖核心知识点</p>
+      <button class="btn-primary">开始做题</button>
+    </div>
+    <div class="action-card video-card" onclick="navigateTo('video')">
+      <div class="card-header">
+        <span class="card-icon">🎬</span>
+        <h3>今日短视频</h3>
+      </div>
+      <p>根据学情自动生成知识点讲解视频</p>
+      <button class="btn-primary">观看视频</button>
+    </div>
+  </div>
+
+  <div class="progress-ring-section">
+    <h3>学习进度概览</h3>
+    <div class="progress-rings">
+      <div class="ring-item">
+        <canvas id="ringComprehensive" width="120" height="120"></canvas>
+        <span class="ring-label">综合知识</span>
+      </div>
+      <div class="ring-item">
+        <canvas id="ringCase" width="120" height="120"></canvas>
+        <span class="ring-label">案例分析</span>
+      </div>
+      <div class="ring-item">
+        <canvas id="ringEssay" width="120" height="120"></canvas>
+        <span class="ring-label">论文写作</span>
+      </div>
+      <div class="ring-item">
+        <canvas id="ringPast" width="120" height="120"></canvas>
+        <span class="ring-label">历年真题</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 每日习题 ========== -->
+<section class="page" id="page-quiz">
+  <div class="page-header">
+    <h2>每日习题</h2>
+    <p class="page-desc">每日 5 道精选系规真题，覆盖 ITIL、项目管理、IT 治理、信息安全等核心考点</p>
+  </div>
+  <div id="quizContainer"></div>
+  <div id="quizResult" class="quiz-result" style="display:none;"></div>
+  <div class="quiz-actions">
+    <button class="btn-secondary" onclick="loadTodayQuiz()">刷新今日习题</button>
+    <button class="btn-secondary" onclick="showWrongBook()">错题本</button>
+    <button class="btn-secondary" onclick="startMockExam()">模拟考试</button>
+  </div>
+  <div id="wrongBookPanel" class="wrong-book-panel" style="display:none;"></div>
+</section>
+
+<!-- ========== 学情档案 ========== -->
+<section class="page" id="page-progress">
+  <div class="page-header">
+    <h2>学情档案</h2>
+    <p class="page-desc">全面追踪学习数据，精准定位薄弱环节</p>
+  </div>
+  <div class="progress-dashboard">
+    <div class="chart-card">
+      <h3>知识点掌握度雷达图</h3>
+      <canvas id="radarChart" width="400" height="400"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>正确率趋势</h3>
+      <canvas id="trendChart" width="400" height="400"></canvas>
+    </div>
+  </div>
+  <div class="chart-card full-width">
+    <h3>学习日历</h3>
+    <div id="calendarHeatmap" class="calendar-heatmap"></div>
+    <div class="calendar-legend">
+      <span>少</span>
+      <div class="legend-cells">
+        <div class="legend-cell level-0"></div>
+        <div class="legend-cell level-1"></div>
+        <div class="legend-cell level-2"></div>
+        <div class="legend-cell level-3"></div>
+        <div class="legend-cell level-4"></div>
+      </div>
+      <span>多</span>
+    </div>
+  </div>
+  <div class="chart-card full-width">
+    <h3>薄弱知识点分析</h3>
+    <div id="weakPoints" class="weak-points"></div>
+  </div>
+</section>
+
+<!-- ========== 每日视频 ========== -->
+<section class="page" id="page-video">
+  <div class="page-header">
+    <h2>每日短视频</h2>
+    <p class="page-desc">根据学情自动生成知识点讲解，每日一个 1-3 分钟精华视频</p>
+  </div>
+  <div class="video-main">
+    <div class="video-player-area" id="videoPlayerArea">
+      <div class="video-placeholder">
+        <span class="play-icon">▶</span>
+        <p>点击下方"生成今日视频"开始观看</p>
+      </div>
+    </div>
+    <div class="video-info" id="videoInfo" style="display:none;">
+      <h3 id="videoTitle"></h3>
+      <p id="videoSummary"></p>
+    </div>
+  </div>
+  <div class="video-actions">
+    <button class="btn-primary" onclick="generateTodayVideo()">生成今日视频</button>
+  </div>
+  <div class="video-history">
+    <h3>历史视频</h3>
+    <div id="videoHistoryList" class="video-history-list"></div>
+  </div>
+</section>
+
+<!-- ========== 学习陪伴 ========== -->
+<section class="page" id="page-companion">
+  <div class="page-header">
+    <h2>学习陪伴</h2>
+    <p class="page-desc">AI 智能问答 · 学习计划推荐 · 备考激励</p>
+  </div>
+  <div class="companion-layout">
+    <div class="chat-area">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg bot">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-content">你好！我是你的系规备考助手。可以问我任何关于系统规划与管理师考试的问题，比如：ITIL 核心流程有哪些？项目管理的十大知识领域是什么？如何准备论文写作？</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="输入你的问题..." onkeypress="if(event.key==='Enter')sendMessage()">
+        <button class="btn-primary" onclick="sendMessage()">发送</button>
+      </div>
+    </div>
+    <div class="companion-sidebar">
+      <div class="sidebar-card">
+        <h3>📅 今日学习计划</h3>
+        <div id="studyPlan"></div>
+      </div>
+      <div class="sidebar-card">
+        <h3>💪 备考激励</h3>
+        <div id="motivationText"></div>
+      </div>
+      <div class="sidebar-card">
+        <h3>🎯 快捷入口</h3>
+        <button class="btn-secondary btn-full" onclick="startMockExam()">开始模拟考试</button>
+        <button class="btn-secondary btn-full" onclick="navigateTo('quiz')">去做今日习题</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /#app -->
+
+<!-- 模拟考试弹窗 -->
+<div id="mockExamModal" class="modal" style="display:none;">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h2>模拟考试</h2>
+      <span class="modal-close" onclick="closeMockExam()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div id="mockExamTimer" class="exam-timer"></div>
+      <div id="mockExamContent"></div>
+      <div id="mockExamResult" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 知识点视频播放弹窗 -->
+<div id="videoModal" class="modal" style="display:none;">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h2 id="videoModalTitle"></h2>
+      <span class="modal-close" onclick="closeVideoModal()">✕</span>
+    </div>
+    <div class="modal-body" id="videoModalBody"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
