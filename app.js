@@ -857,6 +857,40 @@ function loadCompanionData(){
     ).join('');
     chatDiv.scrollTop = chatDiv.scrollHeight;
   }
+
+  // 检查 AI 服务状态
+  checkAIStatus().then(mode => {
+    const statusMap = {
+      'ai': '<span style="color:#27ae60;">⚡ AI 已连接</span>',
+      'offline': '<span style="color:#f5a623;">⚠ 离线模式（未配置 API Key）</span>',
+      'unavailable': '<span style="color:#e74c3c;">⚠ AI 服务未启动</span>'
+    };
+    chatDiv.innerHTML = `<div class="chat-msg bot"><div class="msg-avatar">🤖</div><div class="msg-content">${statusMap[mode] || statusMap['unavailable']}<br>你好！我是你的系规备考助手。可以问我任何关于系统规划与管理师考试的问题，比如：ITIL 核心流程有哪些？项目管理十大知识领域是什么？如何准备论文写作？</div></div>`;
+    if(data.chatHistory.length > 0){
+      chatDiv.innerHTML += data.chatHistory.map(msg =>
+        `<div class="chat-msg ${msg.role}"><div class="msg-avatar">${msg.role==='bot'?'🤖':'👤'}</div><div class="msg-content">${msg.content}</div></div>`
+      ).join('');
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  });
+}
+
+// AI 服务地址（仅本地访问时启用，HTTPS 页面自动降级为离线）
+const AI_SERVER = (location.protocol === 'http:' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1'))
+  ? 'http://localhost:5000'
+  : null;
+
+// 检查 AI 服务状态
+async function checkAIStatus(){
+  if(!AI_SERVER) return 'unavailable'; // 线上页面无本地服务
+  try{
+    const r = await fetch(AI_SERVER + '/status', {method:'GET'});
+    if(r.ok){
+      const d = await r.json();
+      return d.ai_enabled ? 'ai' : 'offline';
+    }
+  }catch(e){}
+  return 'unavailable'; // 服务器未启动
 }
 
 function sendMessage(){
@@ -870,21 +904,63 @@ function sendMessage(){
   chatDiv.innerHTML += `<div class="chat-msg user"><div class="msg-avatar">👤</div><div class="msg-content">${msg}</div></div>`;
   chatDiv.scrollTop = chatDiv.scrollHeight;
 
-  // 保存到历史
+  // 保存用户消息到历史
   STATE.learningData.chatHistory.push({role:'user', content:msg});
 
-  // 生成回复
-  const reply = generateReply(msg);
+  // 显示等待动画
+  const loadingId = 'loading-' + Date.now();
+  chatDiv.innerHTML += `<div class="chat-msg bot" id="${loadingId}"><div class="msg-avatar">🤖</div><div class="msg-content"><span class="typing-indicator">正在思考...</span></div></div>`;
+  chatDiv.scrollTop = chatDiv.scrollHeight;
 
-  // 显示机器人回复（模拟打字延迟）
-  setTimeout(() => {
-    chatDiv.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🤖</div><div class="msg-content">${reply}</div></div>`;
+  input.value = '';
+  input.disabled = true;
+
+  // 调用本地 AI 代理（仅在本地 HTTP 环境下可用）
+  if(!AI_SERVER){
+    // 线上页面或 HTTPS，直接降级为离线模式
+    document.getElementById(loadingId).remove();
+    const reply = generateReply(msg);
+    chatDiv.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🤖</div><div class="msg-content"><span style="font-size:11px;color:#e74c3c;">⚠ 离线</span> ${reply}</div></div>`;
     chatDiv.scrollTop = chatDiv.scrollHeight;
     STATE.learningData.chatHistory.push({role:'bot', content:reply});
     saveData();
-  }, 500);
+    input.disabled = false;
+    input.focus();
+    return;
+  }
 
-  input.value = '';
+  // 调用本地 AI 代理
+  fetch(AI_SERVER + '/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      message: msg,
+      history: STATE.learningData.chatHistory.slice(-12)
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById(loadingId).remove();
+    const reply = data.reply || '（无回复）';
+    const modeTag = data.mode === 'ai' ? '<span style="font-size:11px;color:#27ae60;">⚡ AI</span> ' : '<span style="font-size:11px;color:#7f8c8d;">离线</span> ';
+    chatDiv.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🤖</div><div class="msg-content">${modeTag}${reply}</div></div>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    STATE.learningData.chatHistory.push({role:'bot', content:reply});
+    saveData();
+  })
+  .catch(err => {
+    // 本地服务器未启动，降级为离线关键词匹配
+    document.getElementById(loadingId).remove();
+    const reply = generateReply(msg);
+    chatDiv.innerHTML += `<div class="chat-msg bot"><div class="msg-avatar">🤖</div><div class="msg-content"><span style="font-size:11px;color:#e74c3c;">⚠ 离线</span> ${reply}</div></div>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    STATE.learningData.chatHistory.push({role:'bot', content:reply});
+    saveData();
+  })
+  .finally(() => {
+    input.disabled = false;
+    input.focus();
+  });
 }
 
 function generateReply(msg){
