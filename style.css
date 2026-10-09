@@ -330,3 +330,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   .hero-banner h1{font-size:22px;}
   .stat-value{font-size:24px;}
 }
+
+/* ===== 打字指示器 ===== */
+.typing-indicator{
+  display:inline-block;
+  animation:blink 1s infinite;
+  color:var(--text-light);
+}
+@keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0.3;}}
