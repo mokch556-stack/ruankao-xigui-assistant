@@ -338,3 +338,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   color:var(--text-light);
 }
 @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0.3;}}
+
+/* ===== 聊天 Tab 切换 ===== */
+.chat-tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border);}
+.chat-tab{
+  padding:10px 20px;border:none;background:none;cursor:pointer;
+  font-size:14px;color:var(--text-light);border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:all 0.2s;
+}
+.chat-tab:hover{color:var(--primary);}
+.chat-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
